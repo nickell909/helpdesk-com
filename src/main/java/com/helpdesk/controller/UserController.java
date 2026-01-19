@@ -52,4 +52,10 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/operators")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'ADMIN')")
+    public ResponseEntity<List<User>> getOperators() {
+        return ResponseEntity.ok(userService.getOperators());
+    }
 }

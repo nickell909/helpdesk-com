@@ -2,7 +2,9 @@ package com.helpdesk.controller;
 
 import com.helpdesk.dto.TicketRequest;
 import com.helpdesk.entity.Ticket;
+import com.helpdesk.entity.TicketHistory;
 import com.helpdesk.entity.User;
+import com.helpdesk.service.TicketHistoryService;
 import com.helpdesk.service.TicketService;
 import com.helpdesk.service.UserService;
 import jakarta.validation.Valid;
@@ -26,6 +28,9 @@ public class TicketController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TicketHistoryService ticketHistoryService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
@@ -89,5 +94,21 @@ public class TicketController {
     public ResponseEntity<List<Ticket>> getMyTickets(Authentication authentication) {
         User operator = userService.getUserByLogin(authentication.getName());
         return ResponseEntity.ok(ticketService.getTicketsByOperator(operator));
+    }
+
+    @GetMapping("/{id}/history")
+    @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
+    public ResponseEntity<List<TicketHistory>> getTicketHistory(@PathVariable Long id, Authentication authentication) {
+        Ticket ticket = ticketService.getTicketById(id);
+        User user = userService.getUserByLogin(authentication.getName());
+
+        // Проверяем права доступа
+        if (user.getRole().getName().equals("USER") &&
+                !ticket.getCreatedBy().getUserId().equals(user.getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<TicketHistory> history = ticketHistoryService.getTicketHistory(ticket);
+        return ResponseEntity.ok(history);
     }
 }

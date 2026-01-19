@@ -88,4 +88,8 @@ public class UserService {
         User user = getUserById(id);
         userRepository.delete(user);
     }
+
+    public List<User> getOperators() {
+        return userRepository.findByRoleNameIn(List.of("OPERATOR", "ADMIN"));
+    }
 }

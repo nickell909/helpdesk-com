@@ -19,7 +19,7 @@ public class Ticket {
     @Column(name = "ticket_id")
     private Long ticketId;
 
-    @Column(name = "ticket_number", nullable = false, unique = true, length = 20)
+    @Column(name = "ticket_number", unique = true, length = 20)
     private String ticketNumber;
 
     @Column(name = "title", nullable = false, length = 200)

@@ -22,6 +22,10 @@ public class TicketHistoryService {
         return ticketHistoryRepository.findByTicketOrderByChangedAtDesc(ticket);
     }
 
+    public List<TicketHistory> getTicketHistory(Ticket ticket) {
+        return getHistoryByTicket(ticket);
+    }
+
     public void recordChange(Ticket ticket, User changedBy, String fieldName, String oldValue, String newValue) {
         TicketHistory history = new TicketHistory();
         history.setTicket(ticket);

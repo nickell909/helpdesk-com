@@ -49,6 +49,17 @@ Controller → Service → Repository
    - Среднее время решения
    - Загрузка операторов
 
+## 📖 Документация
+
+**[Полная документация API →](API_DOCUMENTATION.md)**
+
+Подробная документация содержит:
+- Описание всех эндпоинтов с примерами запросов и ответов
+- Коды ошибок и их описания
+- Примеры использования cURL и HTTPie
+- Workflow сценарии (создание заявки, назначение оператора и т.д.)
+- Полный список всех доступных API методов
+
 ## Структура проекта
 
 ```
@@ -156,6 +167,14 @@ Content-Type: application/json
 {
   "operatorId": 2
 }
+
+# Получить мои назначенные заявки (OPERATOR/ADMIN)
+GET /api/tickets/my
+Authorization: Bearer {token}
+
+# Получить историю изменений заявки
+GET /api/tickets/{id}/history
+Authorization: Bearer {token}
 ```
 
 ### Комментарии
@@ -194,6 +213,10 @@ Content-Type: application/json
   "email": "newuser@example.com",
   "roleId": 1
 }
+
+# Получить список операторов (OPERATOR/ADMIN)
+GET /api/admin/users/operators
+Authorization: Bearer {token}
 ```
 
 ### Справочники
