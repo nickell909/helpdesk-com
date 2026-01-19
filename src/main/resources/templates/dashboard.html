@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main content -->
+        <main class="col-md-12 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="bi bi-speedometer2"></i> Панель управления</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="/tickets/new" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Создать заявку
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title text-uppercase">Всего заявок</h6>
+                                    <h2 class="mb-0" id="stat-total">-</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-ticket-detailed" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-white bg-info mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title text-uppercase">Новые</h6>
+                                    <h2 class="mb-0" id="stat-new">-</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-inbox" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title text-uppercase">В работе</h6>
+                                    <h2 class="mb-0" id="stat-in-progress">-</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-gear" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card text-white bg-success mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title text-uppercase">Решено</h6>
+                                    <h2 class="mb-0" id="stat-resolved">-</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="bi bi-check-circle" style="font-size: 3rem; opacity: 0.5;"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Tickets Section -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Последние заявки</h5>
+                    <a href="/tickets" class="btn btn-sm btn-outline-primary">Все заявки <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <div class="card-body">
+                    <div id="loading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+
+                    <div id="tickets-container" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Заголовок</th>
+                                    <th>Категория</th>
+                                    <th>Приоритет</th>
+                                    <th>Статус</th>
+                                    <th>Создана</th>
+                                    <th>Действия</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tickets-list"></tbody>
+                            </table>
+                        </div>
+                        <div id="empty-state" class="text-center py-4 d-none">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <p class="text-muted mt-3">Заявок пока нет</p>
+                            <a href="/tickets/new" class="btn btn-primary">Создать первую заявку</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operator: My Assigned Tickets -->
+            <div id="my-tickets-section" class="card mt-4 d-none">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-check"></i> Мои назначенные заявки</h5>
+                </div>
+                <div class="card-body">
+                    <div id="my-tickets-loading" class="text-center py-3">
+                        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+                    </div>
+                    <div id="my-tickets-container" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead>
+                                <tr>
+                                    <th>Номер</th>
+                                    <th>Заголовок</th>
+                                    <th>Приоритет</th>
+                                    <th>Статус</th>
+                                    <th>Создана</th>
+                                    <th>Действия</th>
+                                </tr>
+                                </thead>
+                                <tbody id="my-tickets-list"></tbody>
+                            </table>
+                        </div>
+                        <div id="my-tickets-empty" class="text-center py-3 d-none">
+                            <p class="text-muted">Нет назначенных заявок</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    let allTickets = [];
+
+    async function loadDashboard() {
+        try {
+            const userInfo = getUserInfo();
+            const tickets = await getTickets();
+            allTickets = tickets;
+
+            // Update statistics
+            updateStatistics(tickets);
+
+            // Display recent tickets (last 10)
+            displayTickets(tickets.slice(0, 10));
+
+            // Load operator-specific section
+            if (userInfo.role === 'OPERATOR' || userInfo.role === 'ADMIN') {
+                document.getElementById('my-tickets-section').classList.remove('d-none');
+                await loadMyTickets();
+            }
+
+        } catch (error) {
+            console.error('Error loading dashboard:', error);
+            showAlert('Ошибка загрузки данных: ' + error.message, 'danger');
+        }
+    }
+
+    async function loadMyTickets() {
+        try {
+            const myTickets = await getMyTickets();
+            document.getElementById('my-tickets-loading').classList.add('d-none');
+            document.getElementById('my-tickets-container').classList.remove('d-none');
+
+            if (myTickets.length === 0) {
+                document.getElementById('my-tickets-empty').classList.remove('d-none');
+                return;
+            }
+
+            const tbody = document.getElementById('my-tickets-list');
+            tbody.innerHTML = myTickets.map(ticket => `
+                <tr>
+                    <td><a href="/tickets/${ticket.ticketId}">${ticket.ticketNumber}</a></td>
+                    <td>${ticket.title}</td>
+                    <td><span class="badge bg-${getPriorityColor(ticket.priority.name)}">${ticket.priority.name}</span></td>
+                    <td><span class="badge status-badge-${getStatusClass(ticket.status.name)}">${ticket.status.name}</span></td>
+                    <td class="text-muted small">${formatDate(ticket.createdAt)}</td>
+                    <td>
+                        <a href="/tickets/${ticket.ticketId}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading my tickets:', error);
+        }
+    }
+
+    function updateStatistics(tickets) {
+        document.getElementById('stat-total').textContent = tickets.length;
+        document.getElementById('stat-new').textContent = tickets.filter(t => t.status.name === 'Новая').length;
+        document.getElementById('stat-in-progress').textContent = tickets.filter(t => t.status.name === 'В работе').length;
+        document.getElementById('stat-resolved').textContent = tickets.filter(t => t.status.name === 'Решена').length;
+    }
+
+    function displayTickets(tickets) {
+        document.getElementById('loading').classList.add('d-none');
+        document.getElementById('tickets-container').classList.remove('d-none');
+
+        if (tickets.length === 0) {
+            document.getElementById('empty-state').classList.remove('d-none');
+            return;
+        }
+
+        const tbody = document.getElementById('tickets-list');
+        tbody.innerHTML = tickets.map(ticket => `
+            <tr class="ticket-priority-${getPriorityClass(ticket.priority.name)}">
+                <td>
+                    <a href="/tickets/${ticket.ticketId}" class="text-decoration-none fw-bold">
+                        ${ticket.ticketNumber}
+                    </a>
+                </td>
+                <td>${ticket.title}</td>
+                <td><span class="badge bg-secondary">${ticket.category.name}</span></td>
+                <td><span class="badge bg-${getPriorityColor(ticket.priority.name)}">${ticket.priority.name}</span></td>
+                <td><span class="badge status-badge-${getStatusClass(ticket.status.name)}">${ticket.status.name}</span></td>
+                <td class="text-muted small">${formatDate(ticket.createdAt)}</td>
+                <td>
+                    <a href="/tickets/${ticket.ticketId}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> Открыть
+                    </a>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function getPriorityColor(priority) {
+        const colors = {
+            'Низкий': 'success',
+            'Средний': 'warning',
+            'Высокий': 'orange',
+            'Критический': 'danger'
+        };
+        return colors[priority] || 'secondary';
+    }
+
+    // Load dashboard on page load
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+</body>
+</html>

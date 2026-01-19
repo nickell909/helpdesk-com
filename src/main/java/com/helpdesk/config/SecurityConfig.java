@@ -52,13 +52,17 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/login", "/css/**", "/js/**", "/webjars/**").permitAll()
+                        // Web pages - allow all, authentication handled by JavaScript
+                        .requestMatchers("/", "/login", "/dashboard", "/tickets", "/tickets/**",
+                                        "/admin/**", "/operator/**").permitAll()
+                        // Static resources
+                        .requestMatchers("/css/**", "/js/**", "/webjars/**").permitAll()
+                        // API endpoints - secured with JWT
                         .requestMatchers("/api/admin/users/operators").hasAnyRole("OPERATOR", "ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/operator/**").hasAnyRole("OPERATOR", "ADMIN")
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/operator/**").hasAnyRole("OPERATOR", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception

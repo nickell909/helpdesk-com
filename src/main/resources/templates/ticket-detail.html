@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <main class="col-md-12 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">
+                    <a href="/tickets" class="text-decoration-none text-muted">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <span id="ticket-number">Загрузка...</span>
+                </h1>
+            </div>
+
+            <div id="loading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+
+            <div id="ticket-container" class="d-none">
+                <div class="row">
+                    <!-- Left column: Ticket details -->
+                    <div class="col-md-8">
+                        <!-- Ticket Info Card -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0" id="ticket-title">Заголовок заявки</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Описание:</strong>
+                                    <p id="ticket-description" class="mt-2">Описание заявки</p>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Категория:</strong> <span id="ticket-category" class="badge bg-secondary">-</span></p>
+                                        <p><strong>Приоритет:</strong> <span id="ticket-priority" class="badge">-</span></p>
+                                        <p><strong>Статус:</strong> <span id="ticket-status" class="badge">-</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Автор:</strong> <span id="ticket-author">-</span></p>
+                                        <p><strong>Назначена:</strong> <span id="ticket-assigned">Не назначена</span></p>
+                                        <p><strong>Создана:</strong> <span id="ticket-created">-</span></p>
+                                        <p><strong>Обновлена:</strong> <span id="ticket-updated">-</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Комментарии</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="comments-loading" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                </div>
+                                <div id="comments-list" class="d-none"></div>
+                                <div id="comments-empty" class="text-center text-muted py-3 d-none">
+                                    <p>Комментариев пока нет</p>
+                                </div>
+
+                                <!-- Add Comment Form -->
+                                <div class="mt-4">
+                                    <form id="comment-form">
+                                        <div class="mb-3">
+                                            <label for="comment-content" class="form-label">Добавить комментарий</label>
+                                            <textarea class="form-control" id="comment-content" rows="3" required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-send"></i> Отправить
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History Section -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-clock-history"></i> История изменений</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="history-loading" class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                </div>
+                                <div id="history-list" class="d-none"></div>
+                                <div id="history-empty" class="text-center text-muted py-3 d-none">
+                                    <p>История изменений пуста</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right column: Actions -->
+                    <div class="col-md-4">
+                        <!-- Operator Actions -->
+                        <div id="operator-actions" class="card mb-4 d-none">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="bi bi-gear"></i> Действия</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="status-form" class="mb-3">
+                                    <label for="status-select" class="form-label">Изменить статус</label>
+                                    <select class="form-select mb-2" id="status-select" required>
+                                        <option value="">Выберите статус</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-check-circle"></i> Изменить статус
+                                    </button>
+                                </form>
+
+                                <hr>
+
+                                <form id="assign-form">
+                                    <label for="operator-select" class="form-label">Назначить оператору</label>
+                                    <select class="form-select mb-2" id="operator-select" required>
+                                        <option value="">Выберите оператора</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="bi bi-person-check"></i> Назначить
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    let currentTicket = null;
+    let ticketId = null;
+
+    async function loadTicketDetails() {
+        // Get ticket ID from URL
+        const pathParts = window.location.pathname.split('/');
+        ticketId = pathParts[pathParts.length - 1];
+
+        try {
+            currentTicket = await getTicketById(ticketId);
+            displayTicket(currentTicket);
+
+            // Load comments and history in parallel
+            await Promise.all([
+                loadComments(),
+                loadHistory()
+            ]);
+
+            // Load operator-specific features
+            const userInfo = getUserInfo();
+            if (userInfo.role === 'OPERATOR' || userInfo.role === 'ADMIN') {
+                await loadOperatorActions();
+            }
+
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('ticket-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error('Error loading ticket:', error);
+            showAlert('Ошибка загрузки заявки: ' + error.message, 'danger');
+        }
+    }
+
+    function displayTicket(ticket) {
+        document.getElementById('ticket-number').textContent = ticket.ticketNumber;
+        document.getElementById('ticket-title').textContent = ticket.title;
+        document.getElementById('ticket-description').textContent = ticket.description || 'Без описания';
+        document.getElementById('ticket-category').textContent = ticket.category.name;
+
+        const priorityBadge = document.getElementById('ticket-priority');
+        priorityBadge.textContent = ticket.priority.name;
+        priorityBadge.className = `badge bg-${getPriorityColor(ticket.priority.name)}`;
+
+        const statusBadge = document.getElementById('ticket-status');
+        statusBadge.textContent = ticket.status.name;
+        statusBadge.className = `badge status-badge-${getStatusClass(ticket.status.name)}`;
+
+        document.getElementById('ticket-author').textContent = ticket.createdBy.fullName;
+        document.getElementById('ticket-assigned').textContent = ticket.assignedTo ? ticket.assignedTo.fullName : 'Не назначена';
+        document.getElementById('ticket-created').textContent = formatDate(ticket.createdAt);
+        document.getElementById('ticket-updated').textContent = formatDate(ticket.updatedAt);
+
+        document.title = `${ticket.ticketNumber} - Helpdesk`;
+    }
+
+    async function loadComments() {
+        try {
+            const comments = await getComments(ticketId);
+            document.getElementById('comments-loading').classList.add('d-none');
+            document.getElementById('comments-list').classList.remove('d-none');
+
+            if (comments.length === 0) {
+                document.getElementById('comments-empty').classList.remove('d-none');
+                return;
+            }
+
+            const commentsList = document.getElementById('comments-list');
+            commentsList.innerHTML = comments.map(comment => `
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>${comment.author.fullName}</strong>
+                        <small class="text-muted">${formatDate(comment.createdAt)}</small>
+                    </div>
+                    <p class="mt-2 mb-0">${comment.content}</p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading comments:', error);
+        }
+    }
+
+    async function loadHistory() {
+        try {
+            const history = await getTicketHistory(ticketId);
+            document.getElementById('history-loading').classList.add('d-none');
+            document.getElementById('history-list').classList.remove('d-none');
+
+            if (history.length === 0) {
+                document.getElementById('history-empty').classList.remove('d-none');
+                return;
+            }
+
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = history.map(item => `
+                <div class="border-start border-3 border-primary ps-3 mb-3">
+                    <div class="d-flex justify-content-between">
+                        <strong>${item.changedBy.fullName}</strong>
+                        <small class="text-muted">${formatDate(item.changedAt)}</small>
+                    </div>
+                    <p class="mb-0">
+                        <strong>${getFieldDisplayName(item.fieldName)}:</strong>
+                        <span class="text-muted">${item.oldValue}</span> → <span class="text-success">${item.newValue}</span>
+                    </p>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading history:', error);
+        }
+    }
+
+    async function loadOperatorActions() {
+        document.getElementById('operator-actions').classList.remove('d-none');
+
+        try {
+            const [statuses, operators] = await Promise.all([
+                getStatuses(),
+                getOperators()
+            ]);
+
+            const statusSelect = document.getElementById('status-select');
+            statuses.forEach(status => {
+                const option = document.createElement('option');
+                option.value = status.statusId;
+                option.textContent = status.name;
+                option.selected = currentTicket.status.statusId === status.statusId;
+                statusSelect.appendChild(option);
+            });
+
+            const operatorSelect = document.getElementById('operator-select');
+            operators.forEach(operator => {
+                const option = document.createElement('option');
+                option.value = operator.userId;
+                option.textContent = operator.fullName;
+                option.selected = currentTicket.assignedTo && currentTicket.assignedTo.userId === operator.userId;
+                operatorSelect.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error('Error loading operator actions:', error);
+        }
+    }
+
+    // Comment form submission
+    document.getElementById('comment-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const content = document.getElementById('comment-content').value;
+
+        try {
+            await addComment(ticketId, content);
+            document.getElementById('comment-content').value = '';
+            showAlert('Комментарий добавлен', 'success');
+            await loadComments();
+        } catch (error) {
+            showAlert('Ошибка добавления комментария: ' + error.message, 'danger');
+        }
+    });
+
+    // Status form submission
+    document.getElementById('status-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const statusId = document.getElementById('status-select').value;
+
+        try {
+            await updateTicketStatus(ticketId, parseInt(statusId));
+            showAlert('Статус изменен', 'success');
+            await loadTicketDetails();
+        } catch (error) {
+            showAlert('Ошибка изменения статуса: ' + error.message, 'danger');
+        }
+    });
+
+    // Assign form submission
+    document.getElementById('assign-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const operatorId = document.getElementById('operator-select').value;
+
+        try {
+            await assignTicket(ticketId, parseInt(operatorId));
+            showAlert('Оператор назначен', 'success');
+            await loadTicketDetails();
+        } catch (error) {
+            showAlert('Ошибка назначения оператора: ' + error.message, 'danger');
+        }
+    });
+
+    function getFieldDisplayName(fieldName) {
+        const names = {
+            'status': 'Статус',
+            'assigned_to': 'Назначение',
+            'priority': 'Приоритет',
+            'category': 'Категория'
+        };
+        return names[fieldName] || fieldName;
+    }
+
+    function getPriorityColor(priority) {
+        const colors = {
+            'Низкий': 'success',
+            'Средний': 'warning',
+            'Высокий': 'orange',
+            'Критический': 'danger'
+        };
+        return colors[priority] || 'secondary';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadTicketDetails);
+</script>
+</body>
+</html>

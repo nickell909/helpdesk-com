@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:replace="~{fragments/layout :: head}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar}"></nav>
+
+<div class="container-fluid">
+    <div class="row">
+        <main class="col-md-12 ms-sm-auto px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2"><i class="bi bi-people"></i> Управление пользователями</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openCreateUserModal()">
+                        <i class="bi bi-plus-lg"></i> Добавить пользователя
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div id="loading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Загрузка...</span>
+                        </div>
+                    </div>
+
+                    <div id="users-container" class="d-none">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Логин</th>
+                                    <th>ФИО</th>
+                                    <th>Email</th>
+                                    <th>Роль</th>
+                                    <th>Действия</th>
+                                </tr>
+                                </thead>
+                                <tbody id="users-list"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- User Modal (Create/Edit) -->
+<div class="modal fade" id="userModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel">Добавить пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="user-form">
+                    <input type="hidden" id="userId">
+
+                    <div class="mb-3">
+                        <label for="login" class="form-label">Логин <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="login" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль <span id="passwordRequired" class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="password">
+                        <div class="form-text" id="passwordHelp">Минимум 6 символов. При редактировании оставьте пустым для сохранения текущего пароля.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="fullName" class="form-label">ФИО <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="fullName" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="roleId" class="form-label">Роль <span class="text-danger">*</span></label>
+                        <select class="form-select" id="roleId" required>
+                            <option value="">Выберите роль</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" id="saveUserBtn" onclick="saveUser()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Подтверждение удаления</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить пользователя <strong id="deleteUserName"></strong>?</p>
+                <p class="text-danger">Это действие необратимо!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+
+<script>
+    let allUsers = [];
+    let allRoles = [];
+    let userModal;
+    let deleteModal;
+    let userToDelete = null;
+
+    async function loadUsers() {
+        try {
+            [allUsers, allRoles] = await Promise.all([
+                getUsers(),
+                getRoles()
+            ]);
+
+            displayUsers();
+            populateRoleSelect();
+
+            document.getElementById('loading').classList.add('d-none');
+            document.getElementById('users-container').classList.remove('d-none');
+
+        } catch (error) {
+            console.error('Error loading users:', error);
+            showAlert('Ошибка загрузки пользователей: ' + error.message, 'danger');
+        }
+    }
+
+    function displayUsers() {
+        const tbody = document.getElementById('users-list');
+        tbody.innerHTML = allUsers.map(user => `
+            <tr>
+                <td>${user.userId}</td>
+                <td><strong>${user.login}</strong></td>
+                <td>${user.fullName}</td>
+                <td>${user.email}</td>
+                <td><span class="badge bg-${getRoleBadgeColor(user.role.name)}">${getRoleDisplayName(user.role.name)}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="openEditUserModal(${user.userId})">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${user.userId})">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function populateRoleSelect() {
+        const roleSelect = document.getElementById('roleId');
+        roleSelect.innerHTML = '<option value="">Выберите роль</option>';
+
+        allRoles.forEach(role => {
+            const option = document.createElement('option');
+            option.value = role.roleId;
+            option.textContent = getRoleDisplayName(role.name);
+            roleSelect.appendChild(option);
+        });
+    }
+
+    function openCreateUserModal() {
+        document.getElementById('userModalLabel').textContent = 'Добавить пользователя';
+        document.getElementById('user-form').reset();
+        document.getElementById('userId').value = '';
+        document.getElementById('password').required = true;
+        document.getElementById('passwordRequired').style.display = 'inline';
+        document.getElementById('passwordHelp').textContent = 'Минимум 6 символов';
+    }
+
+    async function openEditUserModal(userId) {
+        try {
+            const user = await getUserById(userId);
+
+            document.getElementById('userModalLabel').textContent = 'Редактировать пользователя';
+            document.getElementById('userId').value = user.userId;
+            document.getElementById('login').value = user.login;
+            document.getElementById('password').value = '';
+            document.getElementById('password').required = false;
+            document.getElementById('passwordRequired').style.display = 'none';
+            document.getElementById('passwordHelp').textContent = 'Оставьте пустым для сохранения текущего пароля';
+            document.getElementById('fullName').value = user.fullName;
+            document.getElementById('email').value = user.email;
+            document.getElementById('roleId').value = user.role.roleId;
+
+            userModal = new bootstrap.Modal(document.getElementById('userModal'));
+            userModal.show();
+
+        } catch (error) {
+            console.error('Error loading user:', error);
+            showAlert('Ошибка загрузки данных пользователя: ' + error.message, 'danger');
+        }
+    }
+
+    async function saveUser() {
+        const form = document.getElementById('user-form');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveUserBtn');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Сохранение...';
+
+        try {
+            const userId = document.getElementById('userId').value;
+            const password = document.getElementById('password').value;
+
+            const userData = {
+                login: document.getElementById('login').value,
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                roleId: parseInt(document.getElementById('roleId').value)
+            };
+
+            // Add password only if provided
+            if (password) {
+                userData.password = password;
+            }
+
+            if (userId) {
+                // Update existing user
+                await updateUser(parseInt(userId), userData);
+                showAlert('Пользователь успешно обновлен', 'success');
+            } else {
+                // Create new user
+                if (!password) {
+                    throw new Error('Пароль обязателен при создании пользователя');
+                }
+                await createUser(userData);
+                showAlert('Пользователь успешно создан', 'success');
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+            await loadUsers();
+
+        } catch (error) {
+            console.error('Error saving user:', error);
+            showAlert('Ошибка сохранения пользователя: ' + error.message, 'danger');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Сохранить';
+        }
+    }
+
+    function openDeleteModal(userId) {
+        const user = allUsers.find(u => u.userId === userId);
+        if (user) {
+            userToDelete = userId;
+            document.getElementById('deleteUserName').textContent = user.fullName;
+            deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        }
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+        if (!userToDelete) return;
+
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Удаление...';
+
+        try {
+            await deleteUser(userToDelete);
+            showAlert('Пользователь успешно удален', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+            await loadUsers();
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            showAlert('Ошибка удаления пользователя: ' + error.message, 'danger');
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = 'Удалить';
+            userToDelete = null;
+        }
+    });
+
+    function getRoleBadgeColor(role) {
+        const colors = {
+            'USER': 'secondary',
+            'OPERATOR': 'primary',
+            'ADMIN': 'danger'
+        };
+        return colors[role] || 'secondary';
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUsers);
+</script>
+</body>
+</html>

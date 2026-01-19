@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} ? ${pageTitle} + ' - Helpdesk' : 'Helpdesk'">Helpdesk</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #f8f9fa;
+        }
+        .nav-link.active {
+            background-color: #0d6efd;
+            color: white !important;
+        }
+        .ticket-priority-low { border-left: 4px solid #28a745; }
+        .ticket-priority-medium { border-left: 4px solid #ffc107; }
+        .ticket-priority-high { border-left: 4px solid #fd7e14; }
+        .ticket-priority-critical { border-left: 4px solid #dc3545; }
+        .status-badge-new { background-color: #17a2b8; }
+        .status-badge-in-progress { background-color: #ffc107; color: #000; }
+        .status-badge-resolved { background-color: #28a745; }
+        .status-badge-closed { background-color: #6c757d; }
+    </style>
+</head>
+
+<body>
+<nav th:fragment="navbar" class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/dashboard">
+            <i class="bi bi-headset me-2"></i>Helpdesk System
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboard">
+                        <i class="bi bi-speedometer2"></i> Панель управления
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/tickets">
+                        <i class="bi bi-ticket-detailed"></i> Заявки
+                    </a>
+                </li>
+                <li class="nav-item" id="nav-admin" style="display: none;">
+                    <a class="nav-link" href="/admin/users">
+                        <i class="bi bi-people"></i> Пользователи
+                    </a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> <span id="username">Пользователь</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-muted" id="userRole">Роль</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">
+                            <i class="bi bi-box-arrow-right"></i> Выход
+                        </a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<footer th:fragment="footer" class="mt-auto py-3 bg-light">
+    <div class="container text-center">
+        <span class="text-muted">Helpdesk System © 2026</span>
+    </div>
+</footer>
+
+<div th:fragment="scripts">
+    <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/auth.js}"></script>
+    <script th:src="@{/js/api.js}"></script>
+</div>
+</body>
+</html>

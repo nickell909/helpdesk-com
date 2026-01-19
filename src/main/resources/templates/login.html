@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход - Helpdesk</title>
     <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body class="bg-light">
 <div class="container">
@@ -12,29 +13,49 @@
         <div class="col-md-5">
             <div class="card shadow">
                 <div class="card-body p-5">
-                    <h2 class="text-center mb-4">Helpdesk System</h2>
-                    <h5 class="text-center text-muted mb-4">Вход в систему</h5>
-
-                    <div class="alert alert-info">
-                        <h6>Используйте REST API для входа:</h6>
-                        <pre class="mb-0">POST /api/auth/login
-{
-  "login": "admin",
-  "password": "password"
-}</pre>
+                    <div class="text-center mb-4">
+                        <i class="bi bi-headset text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="mt-3">Helpdesk System</h2>
+                        <p class="text-muted">Вход в систему</p>
                     </div>
 
-                    <div class="alert alert-secondary">
-                        <strong>Тестовые пользователи:</strong>
-                        <ul class="mb-0 mt-2">
-                            <li>admin / password</li>
-                            <li>operator1 / password</li>
-                            <li>user1 / password</li>
+                    <div id="errorAlert" class="alert alert-danger d-none" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> <span id="errorMessage"></span>
+                    </div>
+
+                    <form id="loginForm">
+                        <div class="mb-3">
+                            <label for="login" class="form-label">Логин</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" class="form-control" id="login" name="login" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Пароль</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" id="loginButton">
+                                <i class="bi bi-box-arrow-in-right"></i> Войти
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-4">
+
+                    <div class="alert alert-info mb-0">
+                        <div class="small"><strong>Тестовые пользователи (пароль: password):</strong></div>
+                        <ul class="small mb-0 mt-2">
+                            <li><strong>admin</strong> - Администратор</li>
+                            <li><strong>operator1</strong> - Оператор</li>
+                            <li><strong>user1</strong> - Пользователь</li>
                         </ul>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="/" class="btn btn-primary">Вернуться на главную</a>
                     </div>
                 </div>
             </div>
@@ -43,5 +64,55 @@
 </div>
 
 <script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/auth.js}"></script>
+<script th:src="@{/js/api.js}"></script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const loginButton = document.getElementById('loginButton');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loginButton.disabled = true;
+        loginButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Вход...';
+        errorAlert.classList.add('d-none');
+
+        try {
+            const formData = {
+                login: document.getElementById('login').value,
+                password: document.getElementById('password').value
+            };
+
+            const response = await login(formData);
+
+            // Save token and user info
+            setToken(response.token);
+
+            // Use response data directly
+            const userInfo = {
+                userId: response.userId,
+                login: response.login,
+                role: response.role,
+                fullName: response.fullName
+            };
+            setUserInfo(userInfo);
+
+            // Redirect to dashboard
+            window.location.href = '/dashboard';
+
+        } catch (error) {
+            errorMessage.textContent = error.message || 'Ошибка входа. Проверьте логин и пароль.';
+            errorAlert.classList.remove('d-none');
+            loginButton.disabled = false;
+            loginButton.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Войти';
+        }
+    });
+
+    // If already logged in, redirect to dashboard
+    if (isAuthenticated()) {
+        window.location.href = '/dashboard';
+    }
+</script>
 </body>
 </html>
