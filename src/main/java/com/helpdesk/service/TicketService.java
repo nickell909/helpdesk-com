@@ -63,7 +63,11 @@ public class TicketService {
         Status newStatus = statusRepository.findByName("Новая")
                 .orElseThrow(() -> new RuntimeException("Статус 'Новая' не найден"));
 
+        // Генерируем номер заявки ДО сохранения
+        String ticketNumber = generateTicketNumber();
+
         Ticket ticket = new Ticket();
+        ticket.setTicketNumber(ticketNumber);
         ticket.setTitle(request.getTitle());
         ticket.setDescription(request.getDescription());
         ticket.setCategory(category);
@@ -73,13 +77,7 @@ public class TicketService {
         ticket.setCreatedAt(LocalDateTime.now());
         ticket.setUpdatedAt(LocalDateTime.now());
 
-        Ticket savedTicket = ticketRepository.save(ticket);
-
-        // Генерируем номер заявки после сохранения
-        String ticketNumber = generateTicketNumber(savedTicket.getTicketId());
-        savedTicket.setTicketNumber(ticketNumber);
-
-        return ticketRepository.save(savedTicket);
+        return ticketRepository.save(ticket);
     }
 
     public Ticket updateTicketStatus(Long ticketId, Long statusId, String username) {
@@ -134,8 +132,27 @@ public class TicketService {
         return ticketRepository.save(ticket);
     }
 
-    private String generateTicketNumber(Long ticketId) {
+    private String generateTicketNumber() {
         int year = Year.now().getValue();
-        return String.format("TKT-%d-%03d", year, ticketId);
+        String prefix = String.format("TKT-%d-", year);
+
+        // Находим максимальный номер за текущий год
+        List<Ticket> ticketsThisYear = ticketRepository.findAll().stream()
+                .filter(t -> t.getTicketNumber() != null && t.getTicketNumber().startsWith(prefix))
+                .toList();
+
+        int maxNumber = ticketsThisYear.stream()
+                .map(t -> {
+                    try {
+                        String numPart = t.getTicketNumber().substring(prefix.length());
+                        return Integer.parseInt(numPart);
+                    } catch (Exception e) {
+                        return 0;
+                    }
+                })
+                .max(Integer::compareTo)
+                .orElse(0);
+
+        return String.format("TKT-%d-%04d", year, maxNumber + 1);
     }
 }
