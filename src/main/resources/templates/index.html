@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helpdesk - Система технической поддержки</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container">
+        <span class="navbar-brand mb-0 h1">Helpdesk System</span>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h1 class="card-title text-center mb-4">Добро пожаловать в Helpdesk</h1>
+                    <p class="lead text-center">Система внутренней технической поддержки</p>
+
+                    <hr class="my-4">
+
+                    <h3 class="mt-4">REST API Endpoints</h3>
+
+                    <div class="accordion" id="apiAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#authCollapse">
+                                    Аутентификация
+                                </button>
+                            </h2>
+                            <div id="authCollapse" class="accordion-collapse collapse show">
+                                <div class="accordion-body">
+                                    <code>POST /api/auth/login</code>
+                                    <pre class="mt-2 bg-light p-3">
+{
+  "login": "admin",
+  "password": "password"
+}</pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#ticketsCollapse">
+                                    Заявки
+                                </button>
+                            </h2>
+                            <div id="ticketsCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <p><code>GET /api/tickets</code> - Получить все заявки</p>
+                                    <p><code>POST /api/tickets</code> - Создать заявку</p>
+                                    <p><code>GET /api/tickets/{id}</code> - Получить заявку по ID</p>
+                                    <p><code>PUT /api/tickets/{id}/status</code> - Изменить статус</p>
+                                    <p><code>PUT /api/tickets/{id}/assign</code> - Назначить оператора</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#reportsCollapse">
+                                    Отчёты
+                                </button>
+                            </h2>
+                            <div id="reportsCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <p><code>GET /api/reports/pdf</code> - Скачать PDF отчёт</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4">
+                        <h5>Тестовые пользователи (пароль: password)</h5>
+                        <ul>
+                            <li><strong>admin</strong> - Администратор</li>
+                            <li><strong>operator1</strong> - Оператор (Иванов Иван)</li>
+                            <li><strong>operator2</strong> - Оператор (Петрова Мария)</li>
+                            <li><strong>user1</strong> - Пользователь (Сидоров Петр)</li>
+                            <li><strong>user2</strong> - Пользователь (Смирнова Анна)</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="/api/references/categories" class="btn btn-outline-primary">Категории</a>
+                        <a href="/api/references/priorities" class="btn btn-outline-primary">Приоритеты</a>
+                        <a href="/api/references/statuses" class="btn btn-outline-primary">Статусы</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mt-4">
+                <div class="card-body">
+                    <h3>Документация</h3>
+                    <p>Полная документация API доступна в файле <code>README.md</code></p>
+                    <p>Технологии: Java 17, Spring Boot 3, PostgreSQL, JWT, iText PDF</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="mt-5 py-4 bg-light">
+    <div class="container text-center">
+        <p class="text-muted mb-0">Helpdesk System © 2026</p>
+    </div>
+</footer>
+
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

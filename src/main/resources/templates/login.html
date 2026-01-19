@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - Helpdesk</title>
+    <link href="/webjars/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Helpdesk System</h2>
+                    <h5 class="text-center text-muted mb-4">Вход в систему</h5>
+
+                    <div class="alert alert-info">
+                        <h6>Используйте REST API для входа:</h6>
+                        <pre class="mb-0">POST /api/auth/login
+{
+  "login": "admin",
+  "password": "password"
+}</pre>
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <strong>Тестовые пользователи:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>admin / password</li>
+                            <li>operator1 / password</li>
+                            <li>user1 / password</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="/" class="btn btn-primary">Вернуться на главную</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/webjars/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
