@@ -260,7 +260,9 @@
                 getOperators()
             ]);
 
+            // Clear and populate status select
             const statusSelect = document.getElementById('status-select');
+            statusSelect.innerHTML = '<option value="">Выберите статус</option>';
             statuses.forEach(status => {
                 const option = document.createElement('option');
                 option.value = status.statusId;
@@ -269,7 +271,9 @@
                 statusSelect.appendChild(option);
             });
 
+            // Clear and populate operator select
             const operatorSelect = document.getElementById('operator-select');
+            operatorSelect.innerHTML = '<option value="">Выберите оператора</option>';
             operators.forEach(operator => {
                 const option = document.createElement('option');
                 option.value = operator.userId;
