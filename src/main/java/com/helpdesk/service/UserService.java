@@ -40,6 +40,9 @@ public class UserService {
     }
 
     public User createUser(UserRequest request) {
+        if (request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new RuntimeException("Пароль не может быть пустым");
+        }
         if (userRepository.existsByLogin(request.getLogin())) {
             throw new RuntimeException("Логин уже занят: " + request.getLogin());
         }
