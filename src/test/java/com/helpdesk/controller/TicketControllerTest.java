@@ -213,7 +213,7 @@ public class TicketControllerTest extends BaseIntegrationTest {
 
         mockMvc.perform(get("/api/tickets/999")
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().is5xxServerError()); // RuntimeException пробрасывается как 500
+                .andExpect(status().isNotFound()); // 404 - заявка не найдена
     }
 
     // Helper method для создания тестовой заявки

@@ -87,7 +87,7 @@ public class UserControllerTest extends BaseIntegrationTest {
                         .header("Authorization", "Bearer " + token)
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().is5xxServerError()); // RuntimeException
+                .andExpect(status().isConflict()); // 409 - логин уже занят
     }
 
     @Test
@@ -139,7 +139,7 @@ public class UserControllerTest extends BaseIntegrationTest {
         // Проверяем, что удален
         mockMvc.perform(get("/api/admin/users/" + userId)
                         .header("Authorization", "Bearer " + createToken))
-                .andExpect(status().is5xxServerError()); // Пользователь не найден
+                .andExpect(status().isNotFound()); // 404 - пользователь не найден
     }
 
     @Test
