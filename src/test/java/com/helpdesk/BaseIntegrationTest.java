@@ -49,6 +49,9 @@ public abstract class BaseIntegrationTest {
     protected CommentRepository commentRepository;
 
     @Autowired
+    protected TicketHistoryRepository ticketHistoryRepository;
+
+    @Autowired
     protected PasswordEncoder passwordEncoder;
 
     protected Role userRole;
@@ -73,7 +76,8 @@ public abstract class BaseIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        // Очистка БД
+        // Очистка БД (важен порядок из-за внешних ключей)
+        ticketHistoryRepository.deleteAll();
         commentRepository.deleteAll();
         ticketRepository.deleteAll();
         userRepository.deleteAll();

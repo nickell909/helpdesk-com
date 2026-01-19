@@ -8,6 +8,7 @@ import com.helpdesk.repository.CommentRepository;
 import com.helpdesk.repository.TicketRepository;
 import com.helpdesk.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +40,12 @@ public class CommentService {
 
         User author = userRepository.findByLogin(username)
                 .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + username));
+
+        // Проверка доступа: USER может комментировать только свои заявки
+        String roleName = author.getRole().getName();
+        if ("USER".equals(roleName) && !ticket.getCreatedBy().getUserId().equals(author.getUserId())) {
+            throw new AccessDeniedException("Нет доступа к комментированию этой заявки");
+        }
 
         Comment comment = new Comment();
         comment.setTicket(ticket);
